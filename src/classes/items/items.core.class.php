@@ -221,7 +221,11 @@ class ItemsCore {
 				$item = array_merge($item, $typeObject->get($item["id"]));
 			}
 			else {
-				$item = array_merge($item, $this->getSimpleType($item["id"], $typeObject));
+				$tmp_simple_item = $this->getSimpleType($item["id"], $typeObject);
+				
+				if(count($tmp_simple_item)) {
+					$item = array_merge($item, $tmp_simple_item);
+				}
 			}
 
 			// add mediae
@@ -317,6 +321,7 @@ class ItemsCore {
 		$query = new Query();
 
 		$sql = "SELECT * FROM ".$typeObject->db." WHERE item_id = $item_id";
+
 		if($query->sql($sql)) {
 			$item = $query->result(0);
 			unset($item["id"]);
@@ -609,10 +614,12 @@ class ItemsCore {
 		// }
 
 		if(isset($itemtype)) {
-			$WHERE[] = "items.itemtype = '$itemtype'";
-
 			// add main itemtype table to enable sorting based on local values
-			$LEFTJOIN[] = $this->typeObject($itemtype)->db." as ".$itemtype." ON items.id = ".$itemtype.".item_id";
+			$WHERE[] = "items.itemtype = '$itemtype'";
+			$WHERE[] = "items.id = ".$itemtype.".item_id";
+			$FROM[] = $this->typeObject($itemtype)->db." as ".$itemtype;
+
+//			$LEFTJOIN[] = $this->typeObject($itemtype)->db." as ".$itemtype." ON items.id = ".$itemtype.".item_id";
 		}
 
 
@@ -710,7 +717,7 @@ class ItemsCore {
 
 		}
 
-		$ORDER[] = "items.published_at DESC";
+		$ORDER[] = "items.published_at DESC, items.id";
 
 		if(isset($limit)) {
 			$limit = " LIMIT $limit";
@@ -722,11 +729,9 @@ class ItemsCore {
 		$items = array();
 
 		$sql = $query->compileQuery($SELECT, $FROM, array("LEFTJOIN" => $LEFTJOIN, "WHERE" => $WHERE, "HAVING" => $HAVING, "GROUP_BY" => $GROUP_BY, "ORDER" => $ORDER)) . $limit;
-		// debug($sql);
 
 		$query->sql($sql);
 		$items = $query->results();
-
 
 		// TODO: consider if this could be integrated in primary query
 		// - but might give issues with flexibility and query load on mixed lists
@@ -1465,7 +1470,7 @@ class ItemsCore {
 		}
 
 		// no matching prices found
-		return false;
+		return array();
 	}
 
 
