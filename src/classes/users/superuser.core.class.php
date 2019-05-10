@@ -228,9 +228,9 @@ class SuperUserCore extends User {
 						$sql = "DELETE FROM ".$this->db_password_reset_tokens." WHERE user_id = ".$user_id;
 						$query->sql($sql);
 
-					// delete activation reminders
-					$sql = "DELETE FROM ".SITE_DB.".user_log_verification_links WHERE user_id = ".$user_id;
-					$query->sql($sql);
+						// delete activation reminders
+						$sql = "DELETE FROM ".SITE_DB.".user_log_verification_links WHERE user_id = ".$user_id;
+						$query->sql($sql);
 
 						// delete api tokens
 						$sql = "DELETE FROM ".$this->db_apitokens." WHERE user_id = ".$user_id;
@@ -778,7 +778,7 @@ class SuperUserCore extends User {
 
 				// email has not been set before
 				if(!$current_email) {
-					
+
 					$sql = "INSERT INTO $this->db_usernames SET username = '$email', verification_code = '$verification_code', type = 'email', user_id = $user_id";
 					$query->sql($sql);
 					$username_id = $query->lastInsertId();
@@ -789,13 +789,11 @@ class SuperUserCore extends User {
 					
 					if($query->sql($sql)) {
 						
-							message()->addMessage("Email added");
-							$status = [
-								"email_status" => "UPDATED",
-							];
+						message()->addMessage("Email added");
+						$status = [
+							"email_status" => "UPDATED",
+						];
 					}
-
-
 				}
 				
 				// email is changed
